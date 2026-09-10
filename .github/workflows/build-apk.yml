@@ -24,6 +24,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write   # serve per allegare l'APK alla Release sui tag v*
     steps:
       - name: Scarica il codice
         uses: actions/checkout@v4
