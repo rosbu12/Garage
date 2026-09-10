@@ -1,0 +1,96 @@
+# Genera l'APK Android impacchettando la web app (cartella `web/`) con Capacitor.
+#
+# Quando gira:
+#  - a ogni push sul branch principale (main)
+#  - a mano, dal tab "Actions" di GitHub (pulsante "Run workflow")
+#  - quando pubblichi un tag tipo v1.0.0  ->  in quel caso allega l'APK a una Release
+#
+# Dove trovi l'APK finito:
+#  Actions -> apri l'ultimo run -> sezione "Artifacts" -> "garage-apk".
+#  (Con un tag, lo trovi anche in Releases.)
+#
+# NB: è un APK "debug", firmato con una chiave di test. Per installarlo bisogna
+#     consentire le "app da origini sconosciute" sul telefono. Va benissimo per
+#     uso personale; per gli store servirà una firma vera, più avanti.
+
+name: Build APK
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Scarica il codice
+        uses: actions/checkout@v4
+
+      - name: Prepara Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Prepara Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Prepara Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Installa Capacitor
+        run: npm install
+
+      - name: Inizializza Capacitor (solo se manca la config)
+        run: |
+          if [ ! -f capacitor.config.json ] && [ ! -f capacitor.config.ts ]; then
+            npx cap init "Garage" "com.garage.app" --web-dir web
+          fi
+
+      - name: Crea il progetto Android
+        run: npx cap add android
+
+      - name: Copia la web app dentro il progetto Android
+        run: npx cap sync android
+
+      - name: Mantieni la stessa firma di test tra una build e l'altra
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: garage-debug-keystore-v1
+
+      - name: Crea la chiave di test se non c'è
+        run: |
+          mkdir -p ~/.android
+          if [ ! -f ~/.android/debug.keystore ]; then
+            keytool -genkeypair -v -keystore ~/.android/debug.keystore \
+              -storepass android -keypass android -alias androiddebugkey \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -dname "CN=Android Debug,O=Android,C=US"
+          fi
+
+      - name: Compila l'APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Rinomina l'APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk garage.apk
+
+      - name: Carica l'APK come artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: garage-apk
+          path: garage.apk
+          if-no-files-found: error
+
+      - name: Allega l'APK alla Release (solo sui tag v*)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: garage.apk

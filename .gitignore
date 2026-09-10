@@ -1,0 +1,26 @@
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python (server di sviluppo)
+__pycache__/
+*.pyc
+
+# Editor
+.vscode/
+.idea/
+
+# Node / Capacitor (per l'APK)
+node_modules/
+package-lock.json
+# La cartella `android/` la rigenera la CI a ogni build: non va caricata.
+/android/
+
+# Build locali Flutter (vengono rigenerate)
+app/.dart_tool/
+app/build/
+app/.flutter-plugins
+app/.flutter-plugins-dependencies
+# Nota: le cartelle app/android e app/ios le rigenera la CI con `flutter create`.
+# Se un domani le personalizzi (icona, firma) e le vuoi versionare, va bene lo stesso.

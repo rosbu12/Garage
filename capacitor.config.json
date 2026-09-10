@@ -1,0 +1,8 @@
+{
+  "appId": "com.garage.app",
+  "appName": "Garage",
+  "webDir": "web",
+  "server": {
+    "androidScheme": "https"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "garage-web",
+      "runtimeExecutable": "python",
+      "runtimeArgs": ["web/dev-server.py"],
+      "port": 4173
+    }
+  ]
+}
