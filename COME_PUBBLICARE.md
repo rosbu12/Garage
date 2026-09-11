@@ -61,23 +61,37 @@ si sistema.
 > sopra il precedente senza disinstallare. Se un giorno dovesse dare errore di firma,
 > disinstalla prima la vecchia versione.
 
-## 6. Aggiornare l'app in futuro
+## 6. Attiva il link web (una volta sola)
+
+**Settings → Pages → Source: "GitHub Actions"** → salva.
+Dopo qualche minuto, il processo **"Deploy web"** (già presente) pubblica la web app su un
+indirizzo tipo `https://tuo-utente.github.io/garage/`. Da lì si installa sulla Home:
+Chrome → menu → *Installa app*; Safari (iPhone) → Condividi → *Aggiungi a Home*.
+
+Questo passo va fatto una volta sola: da qui in avanti resta attivo.
+
+## 7. Pubblicare una versione "ufficiale" (Release)
+
+Quando vuoi distribuire una versione precisa — anche a chi non sa nulla di GitHub —
+crea un **tag**:
+
+**tab Releases → Draft a new release → Choose a tag → scrivi `v1.0.0` → Publish**.
+
+GitHub ricompila l'APK e crea la Release con, **già scritti nella descrizione**, i due
+link pronti da girare a chiunque:
+
+- 🤖 **Android** → l'APK allegato sotto "Assets"
+- 🍎 **iPhone e altri** → il link della web app (punto 6)
+
+Basta mandare l'indirizzo della Release (o di `.../releases/latest`, che punta sempre
+all'ultima pubblicata): chi la apre sceglie da solo il link giusto per il suo telefono.
+
+## 8. Aggiornare l'app in futuro
 
 Modifica i file (anche solo `web/index.html`) e ricaricali su GitHub
 (**Add file → Upload files**, oppure con GitHub Desktop). Ogni caricamento su `main`
 rifà partire "Build APK": scarichi il nuovo APK da Actions come al punto 4.
-
-Per marcare una versione "ufficiale": crea un **tag** `v1.0.0`
-(tab **Releases → Draft a new release → Choose a tag → v1.0.0 → Publish**).
-In quel caso l'APK viene allegato direttamente alla Release, pronto da scaricare.
-
-## 7. (Facoltativo) Il link web
-
-C'è anche un processo **"Deploy web"** che pubblica la web app.
-Per attivarlo: **Settings → Pages → Source: GitHub Actions**.
-Dopo qualche minuto ottieni un indirizzo tipo
-`https://tuo-utente.github.io/garage/` da aprire e installare sul telefono
-(Chrome: menu → *Installa app*; Safari: Condividi → *Aggiungi a Home*).
+Per una nuova versione ufficiale, ripeti il punto 7 con un tag successivo (`v1.0.1`…).
 
 ---
 

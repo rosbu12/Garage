@@ -3,7 +3,10 @@
 # Quando gira:
 #  - a ogni push sul branch principale (main)
 #  - a mano, dal tab "Actions" di GitHub (pulsante "Run workflow")
-#  - quando pubblichi un tag tipo v1.0.0  ->  in quel caso allega l'APK a una Release
+#  - quando pubblichi un tag tipo v1.0.0  ->  in quel caso allega l'APK a una Release,
+#    con nelle note il link Android (l'APK stesso) e il link per iPhone (GitHub Pages).
+#    Perché il link iPhone funzioni, GitHub Pages va attivato una volta sola:
+#    Settings -> Pages -> Source: "GitHub Actions".
 #
 # Dove trovi l'APK finito:
 #  Actions -> apri l'ultimo run -> sezione "Artifacts" -> "garage-apk".
@@ -96,3 +99,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: garage.apk
+          body: |
+            **Garage ${{ github.ref_name }}**
+
+            - 🤖 **Android** — scarica `garage.apk` qui sotto (Assets) e installalo (consenti "app da fonti sconosciute").
+            - 🍎 **iPhone e altri dispositivi** — apri il link e tocca "Aggiungi a schermata Home":
+              https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
