@@ -59,6 +59,9 @@ jobs:
       - name: Crea il progetto Android
         run: npx cap add android
 
+      - name: Genera l'icona dell'app dal logo (cartella assets/)
+        run: npx capacitor-assets generate --android --assetPath assets
+
       - name: Copia la web app dentro il progetto Android
         run: npx cap sync android
 

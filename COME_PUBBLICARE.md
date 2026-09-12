@@ -103,5 +103,6 @@ Per una nuova versione ufficiale, ripeti il punto 7 con un tag successivo (`v1.0
   serve un componente nativo in più, da aggiungere in un secondo momento.
 - **La cartella `app/`** (Flutter) non viene usata per questo APK: è una versione
   separata, tenuta come base per un'eventuale app nativa futura.
-- **Icona dell'app**: per ora è quella predefinita di Capacitor. Si può personalizzare
-  più avanti.
+- **Icona dell'app**: generata dal logo in `assets/` a ogni build (icona adattiva
+  Android, sfondo sfumato del marchio). Per cambiarla basta sostituire i file SVG
+  in quella cartella.

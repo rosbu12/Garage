@@ -4,7 +4,8 @@
   "private": true,
   "description": "Garage — promemoria per le scadenze dei veicoli (web app impacchettata in APK con Capacitor)",
   "devDependencies": {
-    "@capacitor/cli": "^6.2.1"
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/assets": "^3.0.5"
   },
   "dependencies": {
     "@capacitor/android": "^6.2.1",
