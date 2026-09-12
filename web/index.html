@@ -389,7 +389,8 @@ const TR = {
     kmSheetTitle:'Aggiorna chilometraggio', kmSheetLabel:'Chilometraggio attuale', kmSheetPh:'es. 82450',
     kmSection:'Chilometraggio', kmCurrentIs:km=>'Attualmente a '+km,
     kmCurrentUnset:'Chilometraggio del veicolo non impostato (si aggiorna dalla schermata principale).',
-    kmDueLabel:'A quanti km va rifatto (facoltativo)', kmDuePh:'es. 90000',
+    kmIntervalLabel:'Ogni quanti km va rifatto (facoltativo)', kmIntervalPh:'es. 15000',
+    kmAtLabel:'A quanti km l’hai fatto l’ultima volta', kmAtPh:'es. 70000',
     kmLeft:n=>'mancano '+n+' km', kmOver:n=>'superati di '+n+' km',
     knowDeadline:'So la scadenza', didItOn:'L’ho fatto il…',
     deadlineDate:'Data di scadenza', doneOn:'Fatto il', repeatsEvery:'Si ripete ogni',
@@ -444,7 +445,8 @@ const TR = {
     kmSheetTitle:'Update mileage', kmSheetLabel:'Current mileage', kmSheetPh:'e.g. 82450',
     kmSection:'Mileage', kmCurrentIs:km=>'Currently at '+km,
     kmCurrentUnset:'Vehicle mileage not set (set it from the main screen).',
-    kmDueLabel:'Due again at (km, optional)', kmDuePh:'e.g. 90000',
+    kmIntervalLabel:'How often, in km (optional)', kmIntervalPh:'e.g. 15000',
+    kmAtLabel:'Mileage the last time you did it', kmAtPh:'e.g. 70000',
     kmLeft:n=>n+' km to go', kmOver:n=>n+' km over',
     knowDeadline:'I know the deadline', didItOn:'I did it on…',
     deadlineDate:'Deadline date', doneOn:'Done on', repeatsEvery:'Repeats every',
@@ -1123,7 +1125,8 @@ function deadlineSheet(key){
   let byExpiry = e.expiry ? true : (e.done ? false : cat.known);
   let expiry = e.expiry, done = e.done, months = e.months;
   let cost = e.cost!=null ? costToInput(e.cost) : '';
-  let kmDue = e.kmDue!=null ? String(e.kmDue) : '';
+  let kmInterval = e.kmInterval!=null ? String(e.kmInterval) : '';
+  let kmAt = e.kmAt!=null ? String(e.kmAt) : '';
   let files = Array.isArray(e.files) ? e.files.slice() : [];
   const v = vehicles.find(x=>x.id===activeId);
 
@@ -1152,8 +1155,13 @@ function deadlineSheet(key){
         ? '<div class="field"><label>'+esc(t('kmSection'))+'</label>' +
             '<div class="calc" style="margin-top:0">'+I('speed')+
               esc(v.km!=null ? t('kmCurrentIs', fmtKm(v.km)) : t('kmCurrentUnset'))+'</div>' +
-            '<label style="margin-top:12px">'+esc(t('kmDueLabel'))+'</label>' +
-            '<input type="text" inputmode="numeric" id="dkm" placeholder="'+esc(t('kmDuePh'))+'" value="'+esc(kmDue)+'"></div>'
+            (e.kmDue!=null ? '<div class="calc" style="margin-top:8px">'+I('sparkles')+esc(kmStatusLine(e, v.km))+'</div>' : '') +
+            '<label style="margin-top:12px">'+esc(t('kmIntervalLabel'))+'</label>' +
+            '<input type="text" inputmode="numeric" id="dkmi" placeholder="'+esc(t('kmIntervalPh'))+'" value="'+esc(kmInterval)+'">' +
+            '<div id="dkmatwrap" style="margin-top:12px;'+((e.kmAt==null && kmInterval.trim()!=='')?'':'display:none')+'">' +
+              '<label>'+esc(t('kmAtLabel'))+'</label>' +
+              '<input type="text" inputmode="numeric" id="dkmat" placeholder="'+esc(t('kmAtPh'))+'" value="'+esc(kmAt)+'">' +
+            '</div></div>'
         : '') +
       '<div class="field"><label>'+esc(t('attachments'))+'</label><div class="atts" id="datts"></div></div>' +
       '<div class="rowbtns">' +
@@ -1175,18 +1183,32 @@ function deadlineSheet(key){
     });
     const ic = document.getElementById('dc');
     if(ic) ic.oninput = (ev)=>{ cost = ev.target.value; };
-    const ikm = document.getElementById('dkm');
-    if(ikm) ikm.oninput = (ev)=>{ kmDue = ev.target.value; };
+    const ikmi = document.getElementById('dkmi');
+    const kmAtWrap = document.getElementById('dkmatwrap');
+    const ikmat = document.getElementById('dkmat');
+    if(ikmi) ikmi.oninput = (ev)=>{
+      kmInterval = ev.target.value;
+      if(kmAtWrap) kmAtWrap.style.display = (e.kmAt==null && kmInterval.trim()!=='') ? '' : 'none';
+    };
+    if(ikmat) ikmat.oninput = (ev)=>{ kmAt = ev.target.value; };
     document.getElementById('dcancel').onclick = closeSheet;
     document.getElementById('dclear').onclick = async ()=>{
-      e.expiry = null; e.done = null; e.cost = null; e.kmDue = null; e.files = files;
+      e.expiry = null; e.done = null; e.cost = null; e.kmInterval = null; e.kmAt = null; e.kmDue = null; e.files = files;
       await save(); closeSheet(); render();
     };
     document.getElementById('dsave').onclick = async ()=>{
       if(byExpiry){ e.expiry = expiry; e.done = null; }
       else { e.expiry = null; e.done = done; e.months = months; }
       e.cost = parseCost(cost);
-      if(cat.hasKm) e.kmDue = parseKmInt(kmDue);
+      if(cat.hasKm){
+        const interval = parseKmInt(kmInterval);
+        e.kmInterval = interval;
+        if(interval!=null && e.kmAt==null){
+          const baseline = parseKmInt(kmAt);
+          if(baseline!=null) e.kmAt = baseline;
+        }
+        e.kmDue = (interval!=null && e.kmAt!=null) ? e.kmAt + interval : null;
+      }
       e.files = files;
       await save(); closeSheet(); render();
     };
