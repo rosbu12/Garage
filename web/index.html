@@ -1217,6 +1217,19 @@ function deadlineSheet(key){
 }
 
 /* ---------- calendario ---------- */
+/* Dentro l'app installata (Capacitor) il selettore nativo di Android mostra
+   già Google Calendar, Samsung Calendar ecc: si va dritti lì, senza un
+   pannello nostro in mezzo. Sul sito web (browser/PWA), dove quel selettore
+   unico non esiste, si sceglie tra Google Calendar e la condivisione/
+   download del file .ics. */
+function addEventToCalendar(title, desc, iso, filenameBase){
+  if(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()){
+    addToCalendarOther(title, desc, iso, filenameBase);
+  } else {
+    calendarPickerSheet(title, desc, iso, filenameBase);
+  }
+}
+
 function calendarSheet(key){
   const cat = catBy(key);
   const e = entriesFor(activeId)[key];
@@ -1224,14 +1237,14 @@ function calendarSheet(key){
   const x = effectiveExpiry(e);
   if(!x) return;
   const tx = eventTexts(cat, v, e);
-  calendarPickerSheet(tx.title, tx.desc, x, cat.key+'-'+v.name.toLowerCase().replace(/\s+/g,'-'));
+  addEventToCalendar(tx.title, tx.desc, x, cat.key+'-'+v.name.toLowerCase().replace(/\s+/g,'-'));
 }
 
 function calendarSheetForLog(item){
   if(!item.reminder) return;
   const v = vehicles.find(x=>x.id===activeId);
   const desc = ((item.note ? item.note+' ' : '') + (v ? '('+v.name+')' : '')).trim();
-  calendarPickerSheet(item.title, desc, item.reminder,
+  addEventToCalendar(item.title, desc, item.reminder,
     'promemoria-'+item.title.toLowerCase().replace(/\s+/g,'-'));
 }
 
