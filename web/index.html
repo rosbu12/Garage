@@ -396,8 +396,6 @@ const TR = {
     deadlineDate:'Data di scadenza', doneOn:'Fatto il', repeatsEvery:'Si ripete ogni',
     rep1y:'1 anno', rep2y:'2 anni', repM:m=>m+' mesi',
     nextDeadline:d=>'Prossima scadenza: '+d, clearBtn:'Svuota',
-    calAddTitle:'Aggiungi al calendario', googleCal:'Google Calendar', otherCal:'Altro calendario (.ics)',
-    icsDownloaded:'File .ics scaricato: aprilo dalle notifiche o dai Download per aggiungerlo al calendario.',
     evtEst:' Data stimata in base all’ultima manutenzione.'
   },
   en:{
@@ -452,8 +450,6 @@ const TR = {
     deadlineDate:'Deadline date', doneOn:'Done on', repeatsEvery:'Repeats every',
     rep1y:'1 year', rep2y:'2 years', repM:m=>m+' months',
     nextDeadline:d=>'Next deadline: '+d, clearBtn:'Clear',
-    calAddTitle:'Add to calendar', googleCal:'Google Calendar', otherCal:'Other calendar (.ics)',
-    icsDownloaded:'.ics file downloaded: open it from notifications or Downloads to add it to your calendar.',
     evtEst:' Estimated date based on last service.'
   }
 };
@@ -1217,19 +1213,9 @@ function deadlineSheet(key){
 }
 
 /* ---------- calendario ---------- */
-/* Dentro l'app installata (Capacitor) il selettore nativo di Android mostra
-   già Google Calendar, Samsung Calendar ecc: si va dritti lì, senza un
-   pannello nostro in mezzo. Sul sito web (browser/PWA), dove quel selettore
-   unico non esiste, si sceglie tra Google Calendar e la condivisione/
-   download del file .ics. */
-function addEventToCalendar(title, desc, iso, filenameBase){
-  if(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()){
-    addToCalendarOther(title, desc, iso, filenameBase);
-  } else {
-    calendarPickerSheet(title, desc, iso, filenameBase);
-  }
-}
-
+/* Un tap, dritti su Google Calendar: nessuna scelta, nessun file da
+   scaricare. Chi non usa Google Calendar può comunque installarlo e
+   sincronizzarci il proprio calendario (Samsung compreso). */
 function calendarSheet(key){
   const cat = catBy(key);
   const e = entriesFor(activeId)[key];
@@ -1237,32 +1223,14 @@ function calendarSheet(key){
   const x = effectiveExpiry(e);
   if(!x) return;
   const tx = eventTexts(cat, v, e);
-  addEventToCalendar(tx.title, tx.desc, x, cat.key+'-'+v.name.toLowerCase().replace(/\s+/g,'-'));
+  openGoogle(tx.title, tx.desc, x);
 }
 
 function calendarSheetForLog(item){
   if(!item.reminder) return;
   const v = vehicles.find(x=>x.id===activeId);
   const desc = ((item.note ? item.note+' ' : '') + (v ? '('+v.name+')' : '')).trim();
-  addEventToCalendar(item.title, desc, item.reminder,
-    'promemoria-'+item.title.toLowerCase().replace(/\s+/g,'-'));
-}
-
-function calendarPickerSheet(title, desc, iso, filenameBase){
-  openSheet(
-    '<h2>'+I('calPlus')+esc(t('calAddTitle'))+'</h2>' +
-    '<p style="font-size:13.5px;color:var(--ink-2);margin:-8px 0 16px;">' +
-      esc(title)+', '+fmtLong(iso)+'</p>' +
-    '<div class="optlist">' +
-      '<button id="cg">'+I('calPlus')+esc(t('googleCal'))+'</button>' +
-      '<button id="ci">'+I('download')+esc(t('otherCal'))+'</button>' +
-    '</div>' +
-    '<div class="rowbtns"><div class="spacer"></div>' +
-      '<button class="btn-text" id="cc">'+esc(t('cancel'))+'</button></div>'
-  );
-  document.getElementById('cc').onclick = closeSheet;
-  document.getElementById('cg').onclick = ()=>{ openGoogle(title, desc, iso); closeSheet(); };
-  document.getElementById('ci').onclick = ()=>{ addToCalendarOther(title, desc, iso, filenameBase); closeSheet(); };
+  openGoogle(item.title, desc, item.reminder);
 }
 
 function eventTexts(cat, v, e){
@@ -1287,73 +1255,6 @@ function openGoogle(title, desc, iso){
     '&dates=' + d + '/' + dEnd +
     '&details=' + encodeURIComponent(desc);
   window.open(url, '_blank');
-}
-
-function buildIcsText(title, desc, iso){
-  const d = iso.replace(/-/g,'');
-  const next = new Date(iso+'T00:00:00');
-  next.setDate(next.getDate()+1);
-  const dEnd = toIso(next).replace(/-/g,'');
-  const stamp = new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
-  return [
-    'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Garage//IT','CALSCALE:GREGORIAN',
-    'BEGIN:VEVENT',
-    'UID:garage-'+Date.now()+'@local',
-    'DTSTAMP:'+stamp,
-    'DTSTART;VALUE=DATE:'+d,
-    'DTEND;VALUE=DATE:'+dEnd,
-    'SUMMARY:'+title,
-    'DESCRIPTION:'+desc,
-    'BEGIN:VALARM','TRIGGER:-P7D','ACTION:DISPLAY','DESCRIPTION:'+title,'END:VALARM',
-    'END:VEVENT','END:VCALENDAR'
-  ].join('\r\n');
-}
-function buildIcsBlob(title, desc, iso){
-  return new Blob([buildIcsText(title, desc, iso)], {type:'text/calendar;charset=utf-8'});
-}
-
-/* Dentro l'app installata (Capacitor): scrive il file .ics nella cache e apre
-   la scheda di condivisione NATIVA di Android — è quella che elenca davvero
-   Google Calendar, Samsung Calendar ecc., a differenza della condivisione del
-   solo browser che nell'app impacchettata spesso non risponde.
-   Nel sito web (PWA/browser) prova invece la condivisione del browser, e se
-   non c'è scarica il file .ics come prima. */
-async function addToCalendarOther(title, desc, iso, filenameBase){
-  const filename = filenameBase + '.ics';
-
-  if(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()){
-    try {
-      const written = await Capacitor.Plugins.Filesystem.writeFile({
-        path: filename,
-        data: buildIcsText(title, desc, iso),
-        directory: 'CACHE',
-        encoding: 'utf8'
-      });
-      await Capacitor.Plugins.Share.share({ title, dialogTitle: title, url: written.uri });
-      return;
-    } catch(e){ /* se qualcosa non va, prova comunque le vie web qui sotto */ }
-  }
-
-  const blob = buildIcsBlob(title, desc, iso);
-  let shared = false;
-  if(typeof File !== 'undefined' && navigator.canShare){
-    try {
-      const file = new File([blob], filename, {type:'text/calendar'});
-      if(navigator.canShare({files:[file]})){
-        await navigator.share({files:[file], title});
-        shared = true;
-      }
-    } catch(e){ shared = true; }   // annullato o gestito dall'utente: non forzare il download
-  }
-  if(!shared){
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a); a.click(); document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url), 1000);
-    toast(t('icsDownloaded'));
-  }
 }
 
 /* ---------- manifest per l'installazione ---------- */
