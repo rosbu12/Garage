@@ -75,6 +75,13 @@ html,body{margin:0;background:var(--bg);color:var(--ink);
   border:1.5px solid transparent;border-radius:999px;background:rgba(255,111,145,0.14);
   color:var(--brand);font-size:19px;cursor:pointer;padding:9px;}
 
+.kmbar{display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);
+  border-radius:14px;padding:11px 13px;margin-bottom:14px;}
+.kmbar .ic-svg{font-size:18px;color:var(--brand);flex:0 0 auto;}
+.kmbar .kmtxt{flex:1;font-size:13px;color:var(--ink-2);min-width:0;}
+.kmbar .kmupd{background:rgba(255,111,145,0.14);color:var(--brand);border:none;border-radius:999px;
+  padding:7px 14px;font-family:inherit;font-size:12.5px;font-weight:600;cursor:pointer;flex:0 0 auto;}
+
 .card{background:var(--card);border:1px solid var(--line);border-radius:18px;
   padding:14px 15px;margin-bottom:11px;cursor:pointer;transition:transform .08s ease;}
 .card:active{transform:scale(.985);}
@@ -121,8 +128,8 @@ html,body{margin:0;background:var(--bg);color:var(--ink);
   justify-content:center;font-size:17px;background:rgba(255,111,145,0.14);color:var(--brand);}
 .logrow .main{flex:1;min-width:0;}
 .logrow .t{font-size:14px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.logrow .d{font-size:12px;color:var(--ink-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  display:flex;align-items:center;gap:5px;}
+.logrow .d{font-size:12px;color:var(--ink-3);margin-top:2px;
+  display:flex;align-items:center;gap:5px;flex-wrap:wrap;}
 .logrow .cost{font-size:13.5px;font-weight:700;color:var(--ink);flex:0 0 auto;}
 .logempty{font-size:12.5px;color:var(--ink-3);background:var(--card);border:1px dashed var(--line);
   border-radius:14px;padding:16px;text-align:center;line-height:1.5;}
@@ -282,7 +289,10 @@ const ICONS = {
   euro:'<path d="M17.5 6.4A6.6 6.6 0 1 0 17.5 17.6"/><path d="M4.5 10.3h9M4.5 13.7h7.5"/>',
   paperclip:'<path d="M18 8.5l-7.4 7.4a3.1 3.1 0 0 1-4.4-4.4l8-8a4.6 4.6 0 0 1 6.5 6.5l-8.1 8.1a6.1 6.1 0 0 1-8.6-8.6L11 3"/>',
   sun:'<circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.6M12 18.8v2.6M4.6 4.6l1.9 1.9M17.5 17.5l1.9 1.9M2.6 12h2.6M18.8 12h2.6M4.6 19.4l1.9-1.9M17.5 6.5l1.9-1.9"/>',
-  moon:'<path d="M20 13.5A8 8 0 1 1 10.5 4a6.3 6.3 0 0 0 9.5 9.5z"/>'
+  moon:'<path d="M20 13.5A8 8 0 1 1 10.5 4a6.3 6.3 0 0 0 9.5 9.5z"/>',
+  speed:'<path d="M4 15a8 8 0 1 1 16 0"/><path d="M12 15l4.2-5.4"/><circle cx="12" cy="15" r="1.4" fill="currentColor" stroke="none"/>',
+  parking:'<rect x="4" y="4" width="16" height="16" rx="5"/><path d="M9.3 16V8h2.9a2.6 2.6 0 1 1 0 5.2H9.3"/>',
+  bell:'<path d="M6 10a6 6 0 1 1 12 0c0 4 1.5 5.5 2 6H4c.5-.5 2-2 2-6z"/><path d="M10 19a2 2 0 0 0 4 0"/>'
 };
 function I(name, extra){
   return '<svg class="ic-svg'+(extra?' '+extra:'')+'" viewBox="0 0 24 24" aria-hidden="true">' +
@@ -297,6 +307,7 @@ const TR = {
     allGood:'tutto in regola',
     toFollow:n=> n+(n===1 ? ' scadenza da seguire' : ' scadenze da seguire'),
     cat_bollo:'Bollo', cat_assicurazione:'Assicurazione', cat_tagliando:'Tagliando', cat_gomme:'Inversione gomme',
+    cat_posto:'Posto auto',
     st_unset:'da impostare', st_overdue1:'scaduto ieri', st_overdue:n=>'scaduto da '+n+'g',
     st_today:'scade oggi', st_in:n=>'tra '+n+'g',
     setDate:'imposta data', estimated:'stimata', doneToday:'Fatto oggi', calendar:'Calendario',
@@ -330,11 +341,19 @@ const TR = {
     when:'Quando', costOpt:'Costo € (facoltativo)', costPh:'180,00',
     notesOpt:'Note (facoltative)', notesPh:'es. officina Rossi', workErr:'Scrivi cosa è stato fatto',
     attachments:'Allegati', addFile:'Aggiungi file',
+    reminderOpt:'Promemoria (facoltativo)',
+    kmBarSet:km=>'Chilometraggio: '+km, kmBarUnset:'Chilometraggio non impostato', kmBarUpdate:'Aggiorna',
+    kmSheetTitle:'Aggiorna chilometraggio', kmSheetLabel:'Chilometraggio attuale', kmSheetPh:'es. 82450',
+    kmSection:'Chilometraggio', kmCurrentIs:km=>'Attualmente a '+km,
+    kmCurrentUnset:'Chilometraggio del veicolo non impostato (si aggiorna dalla schermata principale).',
+    kmDueLabel:'A quanti km va rifatto (facoltativo)', kmDuePh:'es. 90000',
+    kmLeft:n=>'mancano '+n+' km', kmOver:n=>'superati di '+n+' km',
     knowDeadline:'So la scadenza', didItOn:'L’ho fatto il…',
     deadlineDate:'Data di scadenza', doneOn:'Fatto il', repeatsEvery:'Si ripete ogni',
     rep1y:'1 anno', rep2y:'2 anni', repM:m=>m+' mesi',
     nextDeadline:d=>'Prossima scadenza: '+d, clearBtn:'Svuota',
-    calAddTitle:'Aggiungi al calendario', googleCal:'Google Calendar', appleCal:'Calendario Apple o altro',
+    calAddTitle:'Aggiungi al calendario', googleCal:'Google Calendar', otherCal:'Altro calendario (.ics)',
+    icsDownloaded:'File .ics scaricato: aprilo dalle notifiche o dai Download per aggiungerlo al calendario.',
     evtEst:' Data stimata in base all’ultima manutenzione.'
   },
   en:{
@@ -343,6 +362,7 @@ const TR = {
     allGood:'all up to date',
     toFollow:n=> n+(n===1 ? ' deadline to watch' : ' deadlines to watch'),
     cat_bollo:'Road tax', cat_assicurazione:'Insurance', cat_tagliando:'Service', cat_gomme:'Tyre rotation',
+    cat_posto:'Parking space',
     st_unset:'not set', st_overdue1:'expired yesterday', st_overdue:n=>n+' days overdue',
     st_today:'due today', st_in:n=>'in '+n+'d',
     setDate:'set date', estimated:'estimated', doneToday:'Done today', calendar:'Calendar',
@@ -376,11 +396,19 @@ const TR = {
     when:'When', costOpt:'Cost € (optional)', costPh:'180.00',
     notesOpt:'Notes (optional)', notesPh:'e.g. Rossi garage', workErr:'Write what was done',
     attachments:'Attachments', addFile:'Add file',
+    reminderOpt:'Reminder (optional)',
+    kmBarSet:km=>'Mileage: '+km, kmBarUnset:'Mileage not set', kmBarUpdate:'Update',
+    kmSheetTitle:'Update mileage', kmSheetLabel:'Current mileage', kmSheetPh:'e.g. 82450',
+    kmSection:'Mileage', kmCurrentIs:km=>'Currently at '+km,
+    kmCurrentUnset:'Vehicle mileage not set (set it from the main screen).',
+    kmDueLabel:'Due again at (km, optional)', kmDuePh:'e.g. 90000',
+    kmLeft:n=>n+' km to go', kmOver:n=>n+' km over',
     knowDeadline:'I know the deadline', didItOn:'I did it on…',
     deadlineDate:'Deadline date', doneOn:'Done on', repeatsEvery:'Repeats every',
     rep1y:'1 year', rep2y:'2 years', repM:m=>m+' months',
     nextDeadline:d=>'Next deadline: '+d, clearBtn:'Clear',
-    calAddTitle:'Add to calendar', googleCal:'Google Calendar', appleCal:'Apple Calendar or other',
+    calAddTitle:'Add to calendar', googleCal:'Google Calendar', otherCal:'Other calendar (.ics)',
+    icsDownloaded:'.ics file downloaded: open it from notifications or Downloads to add it to your calendar.',
     evtEst:' Estimated date based on last service.'
   }
 };
@@ -395,8 +423,9 @@ function LOC(){ return lang === 'en' ? 'en-GB' : 'it-IT'; }
 const CATS = [
   {key:'bollo', tk:'cat_bollo', icon:'receipt', months:12, known:true},
   {key:'assicurazione', tk:'cat_assicurazione', icon:'shield', months:12, known:true},
-  {key:'tagliando', tk:'cat_tagliando', icon:'tool', months:12, known:false},
-  {key:'gomme', tk:'cat_gomme', icon:'tire', months:6, known:false}
+  {key:'tagliando', tk:'cat_tagliando', icon:'tool', months:12, known:false, hasKm:true},
+  {key:'gomme', tk:'cat_gomme', icon:'tire', months:6, known:false, hasKm:true},
+  {key:'posto_auto', tk:'cat_posto', icon:'parking', months:12, known:true}
 ];
 const MONTH_OPTS = [3,6,12,24];
 const catBy = k => CATS.find(c=>c.key===k) || CATS[0];
@@ -512,6 +541,24 @@ function parseCost(s){
   }
   const n = parseFloat(v);
   return isFinite(n) && n>=0 ? Math.round(n*100)/100 : null;
+}
+function fmtKmNum(n){ return new Intl.NumberFormat(LOC()).format(n); }
+function fmtKm(n){ return fmtKmNum(n) + ' km'; }
+function parseKmInt(s){
+  if(s==null) return null;
+  const v = String(s).replace(/[^\d]/g,'');
+  if(v==='') return null;
+  const n = parseInt(v,10);
+  return isFinite(n) && n>=0 ? n : null;
+}
+function kmStatusLine(e, curKm){
+  if(e.kmDue==null) return '';
+  let s = fmtKm(e.kmDue);
+  if(curKm!=null){
+    const diff = e.kmDue - curKm;
+    s += ' · ' + (diff>0 ? t('kmLeft', fmtKmNum(diff)) : t('kmOver', fmtKmNum(-diff)));
+  }
+  return s;
 }
 
 /* ---------- foto e allegati ---------- */
@@ -666,10 +713,21 @@ function render(){
     return;
   }
 
+  const v = vehicles.find(x=>x.id===activeId);
+
+  const kmBar = document.createElement('div');
+  kmBar.className = 'kmbar';
+  kmBar.innerHTML = I('speed') +
+    '<span class="kmtxt">'+(v.km!=null ? esc(t('kmBarSet', fmtKm(v.km))) : esc(t('kmBarUnset')))+'</span>' +
+    '<button type="button" class="kmupd" id="kmUpd">'+esc(t('kmBarUpdate'))+'</button>';
+  wrap.appendChild(kmBar);
+  document.getElementById('kmUpd').onclick = ()=>kmSheet(v);
+
   const es = entriesFor(activeId);
   CATS.forEach(c=>{
     const e = es[c.key], st = statusOf(e), x = effectiveExpiry(e);
     const nFiles = (e.files && e.files.length) || 0;
+    const kmLine = c.hasKm ? kmStatusLine(e, v.km) : '';
     const card = document.createElement('div');
     card.className = 'card ' + st;
     card.innerHTML =
@@ -681,6 +739,7 @@ function render(){
       '<div class="r2">' +
         '<div class="date">'+(x ? fmt(x) : t('setDate')) +
           (e.cost!=null ? ' · '+fmtEur(e.cost) : '') +
+          (kmLine ? ' · <span class="clip">'+I('speed')+kmLine+'</span>' : '') +
           (nFiles ? ' · <span class="clip">'+I('paperclip')+nFiles+'</span>' : '') +
           (isEstimated(e) ? '<span class="est">'+I('sparkles')+esc(t('estimated'))+'</span>' : '') +
         '</div>' +
@@ -698,6 +757,48 @@ function render(){
     };
     wrap.appendChild(card);
   });
+
+  /* ---- altri interventi (senza scadenza) ---- */
+  const log = logFor(activeId).slice()
+    .sort((a,b)=> (b.date||'').localeCompare(a.date||''));
+
+  const sec = document.createElement('div');
+  sec.className = 'section';
+  sec.innerHTML = I('tool') + '<h3>'+esc(t('secOther'))+'</h3>' +
+    '<button class="add" id="logAdd" title="'+esc(t('addWork'))+'">'+I('plus')+'</button>';
+  wrap.appendChild(sec);
+
+  if(!log.length){
+    const em = document.createElement('div');
+    em.className = 'logempty';
+    em.textContent = t('otherEmpty');
+    wrap.appendChild(em);
+  } else {
+    log.forEach(item=>{
+      const nFiles = (item.files && item.files.length) || 0;
+      const remText = item.reminder ? (statusText({expiry:item.reminder})+' · '+fmt(item.reminder)) : '';
+      const row = document.createElement('div');
+      row.className = 'logrow';
+      row.innerHTML =
+        '<div class="ic">'+I('tool')+'</div>' +
+        '<div class="main"><div class="t">'+esc(item.title)+'</div>' +
+          '<div class="d">'+(item.date ? fmt(item.date) : t('noDate')) +
+            (item.note ? ' · '+esc(item.note) : '') +
+            (nFiles ? ' <span class="clip">'+I('paperclip')+nFiles+'</span>' : '') +
+            (remText ? ' <span class="clip">'+I('bell')+remText+'</span>' : '') +
+          '</div></div>' +
+        (item.cost!=null ? '<div class="cost">'+fmtEur(item.cost)+'</div>' : '') +
+        (item.reminder ? '<button class="iconbtn" data-act="cal" title="'+esc(t('calendar'))+'">'+I('calPlus')+'</button>' : '');
+      row.onclick = (ev)=>{
+        const btn = ev.target.closest('[data-act="cal"]');
+        if(!btn) return logSheet(item);
+        ev.stopPropagation();
+        calendarSheetForLog(item);
+      };
+      wrap.appendChild(row);
+    });
+  }
+  document.getElementById('logAdd').onclick = ()=>logSheet(null);
 
   /* ---- documenti generali del veicolo ---- */
   const docs = docsFor(activeId);
@@ -735,40 +836,6 @@ function render(){
   }
   document.getElementById('docAdd').onclick = ()=>
     pickFileInto(docsFor(activeId), async ()=>{ const ok = await save(); render(); if(ok) toast(t('docAttached')); });
-
-  /* ---- altri interventi (senza scadenza) ---- */
-  const log = logFor(activeId).slice()
-    .sort((a,b)=> (b.date||'').localeCompare(a.date||''));
-
-  const sec = document.createElement('div');
-  sec.className = 'section';
-  sec.innerHTML = I('tool') + '<h3>'+esc(t('secOther'))+'</h3>' +
-    '<button class="add" id="logAdd" title="'+esc(t('addWork'))+'">'+I('plus')+'</button>';
-  wrap.appendChild(sec);
-
-  if(!log.length){
-    const em = document.createElement('div');
-    em.className = 'logempty';
-    em.textContent = t('otherEmpty');
-    wrap.appendChild(em);
-  } else {
-    log.forEach(item=>{
-      const nFiles = (item.files && item.files.length) || 0;
-      const row = document.createElement('div');
-      row.className = 'logrow';
-      row.innerHTML =
-        '<div class="ic">'+I('tool')+'</div>' +
-        '<div class="main"><div class="t">'+esc(item.title)+'</div>' +
-          '<div class="d">'+(item.date ? fmt(item.date) : t('noDate')) +
-            (item.note ? ' · '+esc(item.note) : '') +
-            (nFiles ? ' <span class="clip">'+I('paperclip')+nFiles+'</span>' : '') +
-          '</div></div>' +
-        (item.cost!=null ? '<div class="cost">'+fmtEur(item.cost)+'</div>' : '');
-      row.onclick = ()=>logSheet(item);
-      wrap.appendChild(row);
-    });
-  }
-  document.getElementById('logAdd').onclick = ()=>logSheet(null);
 
   /* ---- spese per anno (tutto il garage) ---- */
   const yearsSet = new Set([new Date().getFullYear()]);
@@ -857,6 +924,25 @@ document.getElementById('sheetWrap').onclick = (e)=>{
   if(e.target.id==='sheetWrap') closeSheet();
 };
 
+function kmSheet(vehicle){
+  openSheet(
+    '<h2>'+I('speed')+esc(t('kmSheetTitle'))+'</h2>' +
+    '<div class="field"><label>'+esc(t('kmSheetLabel'))+'</label>' +
+      '<input type="text" inputmode="numeric" id="kmv" placeholder="'+esc(t('kmSheetPh'))+'" value="'+(vehicle.km!=null?vehicle.km:'')+'"></div>' +
+    '<div class="rowbtns"><div class="spacer"></div>' +
+      '<button class="btn-text" id="kmc">'+esc(t('cancel'))+'</button>' +
+      '<button class="btn btn-primary" id="kms">'+esc(t('save'))+'</button>' +
+    '</div>'
+  );
+  document.getElementById('kmc').onclick = closeSheet;
+  document.getElementById('kms').onclick = async ()=>{
+    const n = parseKmInt(document.getElementById('kmv').value);
+    vehicle.km = n; vehicle.kmDate = n!=null ? toIso(new Date()) : null;
+    await save(); closeSheet(); render();
+  };
+  setTimeout(()=>document.getElementById('kmv').focus(), 60);
+}
+
 function vehicleSheet(vehicle){
   const editing = !!vehicle;
   let photo = editing ? (vehicle.photo || '') : '';
@@ -936,6 +1022,7 @@ function logSheet(item){
   const date = editing ? (item.date || '') : toIso(new Date());
   const cost = editing && item.cost!=null ? costToInput(item.cost) : '';
   const note = editing ? (item.note || '') : '';
+  const reminder = editing ? (item.reminder || '') : '';
   const files = editing && Array.isArray(item.files) ? item.files.slice() : [];
 
   openSheet(
@@ -948,6 +1035,8 @@ function logSheet(item){
       '<input type="text" inputmode="decimal" id="lc" placeholder="'+esc(t('costPh'))+'" value="'+esc(cost)+'"></div>' +
     '<div class="field"><label>'+esc(t('notesOpt'))+'</label>' +
       '<input type="text" id="ln" placeholder="'+esc(t('notesPh'))+'" value="'+esc(note)+'"></div>' +
+    '<div class="field"><label>'+esc(t('reminderOpt'))+'</label>' +
+      '<input type="date" id="lr" value="'+(reminder||'')+'"></div>' +
     '<div class="field"><label>'+esc(t('attachments'))+'</label><div class="atts" id="latts"></div></div>' +
     '<div class="err" id="le">'+esc(t('workErr'))+'</div>' +
     '<div class="rowbtns">' +
@@ -972,12 +1061,13 @@ function logSheet(item){
     const d = document.getElementById('ld').value || null;
     const c = parseCost(document.getElementById('lc').value);
     const n = document.getElementById('ln').value.trim() || null;
+    const r = document.getElementById('lr').value || null;
     const arr = logFor(activeId);
     if(editing){
       const it = arr.find(z=>z.id===item.id);
-      it.title = tt; it.date = d; it.cost = c; it.note = n; it.files = files;
+      it.title = tt; it.date = d; it.cost = c; it.note = n; it.reminder = r; it.files = files;
     } else {
-      arr.push({id:'l'+Date.now()+Math.random().toString(16).slice(2,6), title:tt, date:d, cost:c, note:n, files});
+      arr.push({id:'l'+Date.now()+Math.random().toString(16).slice(2,6), title:tt, date:d, cost:c, note:n, reminder:r, files});
     }
     await save(); closeSheet(); render();
   };
@@ -990,7 +1080,9 @@ function deadlineSheet(key){
   let byExpiry = e.expiry ? true : (e.done ? false : cat.known);
   let expiry = e.expiry, done = e.done, months = e.months;
   let cost = e.cost!=null ? costToInput(e.cost) : '';
+  let kmDue = e.kmDue!=null ? String(e.kmDue) : '';
   let files = Array.isArray(e.files) ? e.files.slice() : [];
+  const v = vehicles.find(x=>x.id===activeId);
 
   function draw(){
     const computed = byExpiry ? expiry : (done ? addMonths(done, months) : null);
@@ -1013,6 +1105,13 @@ function deadlineSheet(key){
       ) +
       '<div class="field" style="margin-top:18px"><label>'+esc(t('costOpt'))+'</label>' +
         '<input type="text" inputmode="decimal" id="dc" placeholder="'+esc(t('costPh'))+'" value="'+esc(cost)+'"></div>' +
+      (cat.hasKm
+        ? '<div class="field"><label>'+esc(t('kmSection'))+'</label>' +
+            '<div class="calc" style="margin-top:0">'+I('speed')+
+              esc(v.km!=null ? t('kmCurrentIs', fmtKm(v.km)) : t('kmCurrentUnset'))+'</div>' +
+            '<label style="margin-top:12px">'+esc(t('kmDueLabel'))+'</label>' +
+            '<input type="text" inputmode="numeric" id="dkm" placeholder="'+esc(t('kmDuePh'))+'" value="'+esc(kmDue)+'"></div>'
+        : '') +
       '<div class="field"><label>'+esc(t('attachments'))+'</label><div class="atts" id="datts"></div></div>' +
       '<div class="rowbtns">' +
         '<button class="btn-text" id="dclear">'+esc(t('clearBtn'))+'</button>' +
@@ -1033,15 +1132,18 @@ function deadlineSheet(key){
     });
     const ic = document.getElementById('dc');
     if(ic) ic.oninput = (ev)=>{ cost = ev.target.value; };
+    const ikm = document.getElementById('dkm');
+    if(ikm) ikm.oninput = (ev)=>{ kmDue = ev.target.value; };
     document.getElementById('dcancel').onclick = closeSheet;
     document.getElementById('dclear').onclick = async ()=>{
-      e.expiry = null; e.done = null; e.cost = null; e.files = files;
+      e.expiry = null; e.done = null; e.cost = null; e.kmDue = null; e.files = files;
       await save(); closeSheet(); render();
     };
     document.getElementById('dsave').onclick = async ()=>{
       if(byExpiry){ e.expiry = expiry; e.done = null; }
       else { e.expiry = null; e.done = done; e.months = months; }
       e.cost = parseCost(cost);
+      if(cat.hasKm) e.kmDue = parseKmInt(kmDue);
       e.files = files;
       await save(); closeSheet(); render();
     };
@@ -1056,20 +1158,33 @@ function calendarSheet(key){
   const v = vehicles.find(x=>x.id===activeId);
   const x = effectiveExpiry(e);
   if(!x) return;
+  const tx = eventTexts(cat, v, e);
+  calendarPickerSheet(tx.title, tx.desc, x, cat.key+'-'+v.name.toLowerCase().replace(/\s+/g,'-'));
+}
+
+function calendarSheetForLog(item){
+  if(!item.reminder) return;
+  const v = vehicles.find(x=>x.id===activeId);
+  const desc = ((item.note ? item.note+' ' : '') + (v ? '('+v.name+')' : '')).trim();
+  calendarPickerSheet(item.title, desc, item.reminder,
+    'promemoria-'+item.title.toLowerCase().replace(/\s+/g,'-'));
+}
+
+function calendarPickerSheet(title, desc, iso, filenameBase){
   openSheet(
     '<h2>'+I('calPlus')+esc(t('calAddTitle'))+'</h2>' +
     '<p style="font-size:13.5px;color:var(--ink-2);margin:-8px 0 16px;">' +
-      esc(t(cat.tk))+' — '+esc(v.name)+', '+fmtLong(x)+'</p>' +
+      esc(title)+', '+fmtLong(iso)+'</p>' +
     '<div class="optlist">' +
       '<button id="cg">'+I('calPlus')+esc(t('googleCal'))+'</button>' +
-      '<button id="ci">'+I('download')+esc(t('appleCal'))+'</button>' +
+      '<button id="ci">'+I('download')+esc(t('otherCal'))+'</button>' +
     '</div>' +
     '<div class="rowbtns"><div class="spacer"></div>' +
       '<button class="btn-text" id="cc">'+esc(t('cancel'))+'</button></div>'
   );
   document.getElementById('cc').onclick = closeSheet;
-  document.getElementById('cg').onclick = ()=>{ openGoogle(cat, v, e, x); closeSheet(); };
-  document.getElementById('ci').onclick = ()=>{ downloadIcs(cat, v, e, x); closeSheet(); };
+  document.getElementById('cg').onclick = ()=>{ openGoogle(title, desc, iso); closeSheet(); };
+  document.getElementById('ci').onclick = ()=>{ addToCalendarOther(title, desc, iso, filenameBase); closeSheet(); };
 }
 
 function eventTexts(cat, v, e){
@@ -1084,21 +1199,19 @@ function eventTexts(cat, v, e){
   };
 }
 
-function openGoogle(cat, v, e, iso){
-  const tx = eventTexts(cat, v, e);
+function openGoogle(title, desc, iso){
   const d = iso.replace(/-/g,'');
   const next = new Date(iso+'T00:00:00');
   next.setDate(next.getDate()+1);
   const dEnd = toIso(next).replace(/-/g,'');
   const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
-    '&text=' + encodeURIComponent(tx.title) +
+    '&text=' + encodeURIComponent(title) +
     '&dates=' + d + '/' + dEnd +
-    '&details=' + encodeURIComponent(tx.desc);
+    '&details=' + encodeURIComponent(desc);
   window.open(url, '_blank');
 }
 
-function downloadIcs(cat, v, e, iso){
-  const tx = eventTexts(cat, v, e);
+function buildIcsBlob(title, desc, iso){
   const d = iso.replace(/-/g,'');
   const next = new Date(iso+'T00:00:00');
   next.setDate(next.getDate()+1);
@@ -1111,18 +1224,39 @@ function downloadIcs(cat, v, e, iso){
     'DTSTAMP:'+stamp,
     'DTSTART;VALUE=DATE:'+d,
     'DTEND;VALUE=DATE:'+dEnd,
-    'SUMMARY:'+tx.title,
-    'DESCRIPTION:'+tx.desc,
-    'BEGIN:VALARM','TRIGGER:-P7D','ACTION:DISPLAY','DESCRIPTION:'+tx.title,'END:VALARM',
+    'SUMMARY:'+title,
+    'DESCRIPTION:'+desc,
+    'BEGIN:VALARM','TRIGGER:-P7D','ACTION:DISPLAY','DESCRIPTION:'+title,'END:VALARM',
     'END:VEVENT','END:VCALENDAR'
   ].join('\r\n');
-  const blob = new Blob([ics], {type:'text/calendar;charset=utf-8'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = cat.key+'-'+v.name.toLowerCase().replace(/\s+/g,'-')+'.ics';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+  return new Blob([ics], {type:'text/calendar;charset=utf-8'});
+}
+
+/* Prova ad aprire il pannello "condividi" del telefono, così puoi scegliere
+   Google Calendar, Samsung Calendar o qualunque altra app calendario installata.
+   Se il telefono non lo supporta, scarica il file .ics come prima. */
+async function addToCalendarOther(title, desc, iso, filenameBase){
+  const blob = buildIcsBlob(title, desc, iso);
+  const filename = filenameBase + '.ics';
+  let shared = false;
+  if(typeof File !== 'undefined' && navigator.canShare){
+    try {
+      const file = new File([blob], filename, {type:'text/calendar'});
+      if(navigator.canShare({files:[file]})){
+        await navigator.share({files:[file], title});
+        shared = true;
+      }
+    } catch(e){ shared = true; }   // annullato o gestito dall'utente: non forzare il download
+  }
+  if(!shared){
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    toast(t('icsDownloaded'));
+  }
 }
 
 /* ---------- manifest per l'installazione ---------- */
