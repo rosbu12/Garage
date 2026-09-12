@@ -1276,13 +1276,13 @@ function openGoogle(title, desc, iso){
   window.open(url, '_blank');
 }
 
-function buildIcsBlob(title, desc, iso){
+function buildIcsText(title, desc, iso){
   const d = iso.replace(/-/g,'');
   const next = new Date(iso+'T00:00:00');
   next.setDate(next.getDate()+1);
   const dEnd = toIso(next).replace(/-/g,'');
   const stamp = new Date().toISOString().replace(/[-:]/g,'').split('.')[0]+'Z';
-  const ics = [
+  return [
     'BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Garage//IT','CALSCALE:GREGORIAN',
     'BEGIN:VEVENT',
     'UID:garage-'+Date.now()+'@local',
@@ -1294,15 +1294,34 @@ function buildIcsBlob(title, desc, iso){
     'BEGIN:VALARM','TRIGGER:-P7D','ACTION:DISPLAY','DESCRIPTION:'+title,'END:VALARM',
     'END:VEVENT','END:VCALENDAR'
   ].join('\r\n');
-  return new Blob([ics], {type:'text/calendar;charset=utf-8'});
+}
+function buildIcsBlob(title, desc, iso){
+  return new Blob([buildIcsText(title, desc, iso)], {type:'text/calendar;charset=utf-8'});
 }
 
-/* Prova ad aprire il pannello "condividi" del telefono, così puoi scegliere
-   Google Calendar, Samsung Calendar o qualunque altra app calendario installata.
-   Se il telefono non lo supporta, scarica il file .ics come prima. */
+/* Dentro l'app installata (Capacitor): scrive il file .ics nella cache e apre
+   la scheda di condivisione NATIVA di Android — è quella che elenca davvero
+   Google Calendar, Samsung Calendar ecc., a differenza della condivisione del
+   solo browser che nell'app impacchettata spesso non risponde.
+   Nel sito web (PWA/browser) prova invece la condivisione del browser, e se
+   non c'è scarica il file .ics come prima. */
 async function addToCalendarOther(title, desc, iso, filenameBase){
-  const blob = buildIcsBlob(title, desc, iso);
   const filename = filenameBase + '.ics';
+
+  if(window.Capacitor && Capacitor.isNativePlatform && Capacitor.isNativePlatform()){
+    try {
+      const written = await Capacitor.Plugins.Filesystem.writeFile({
+        path: filename,
+        data: buildIcsText(title, desc, iso),
+        directory: 'CACHE',
+        encoding: 'utf8'
+      });
+      await Capacitor.Plugins.Share.share({ title, dialogTitle: title, url: written.uri });
+      return;
+    } catch(e){ /* se qualcosa non va, prova comunque le vie web qui sotto */ }
+  }
+
+  const blob = buildIcsBlob(title, desc, iso);
   let shared = false;
   if(typeof File !== 'undefined' && navigator.canShare){
     try {
